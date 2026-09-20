@@ -7,6 +7,7 @@ import { useAuth } from './context/AuthContext'
 import Discover from './pages/Discover'
 import GameDetails from './pages/GameDetails'
 import Home from './pages/Home'
+import Admin from './pages/Admin'
 
 // Pages that aren't part of the first visit are loaded on demand.
 const Library = lazy(() => import('./pages/Library'))
@@ -39,6 +40,7 @@ export default function App() {
               <Route path="/game/:id" element={<GameDetails />} />
               <Route path="/library" element={<Library />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
