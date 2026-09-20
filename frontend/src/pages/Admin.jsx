@@ -1,158 +1,266 @@
-const stats = [
-  { title: "Total Users", value: "1,284" },
-  { title: "Games", value: "8,942" },
-  { title: "Reviews", value: "3,512" },
-  { title: "Reports", value: "23" },
-];
+import { useEffect, useState } from 'react'
+import { api } from '../api'
 
-const activity = [
-  { user: "Player_01", action: "Added Elden Ring", time: "2 min ago" },
-  { user: "Player_02", action: "Completed Cyberpunk 2077", time: "10 min ago" },
-  { user: "Player_03", action: "Posted a review", time: "18 min ago" },
-  { user: "Player_04", action: "Created a collection", time: "1 hr ago" },
-];
+function formatDate(dateString) {
+  if (!dateString) return ''
 
-const genreData = [
-  { genre: "RPG", users: 480 },
-  { genre: "Action", users: 410 },
-  { genre: "Adventure", users: 355 },
-  { genre: "Shooter", users: 290 },
-  { genre: "Indie", users: 240 },
-];
+  const date = new Date(dateString)
+
+  return date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function formatStatus(status) {
+  if (!status) return ''
+
+  return status
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
 
 export default function Admin() {
+  const [stats, setStats] = useState(null)
+  const [activity, setActivity] = useState([])
+  const [libraryStatus, setLibraryStatus] = useState([])
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadDashboard() {
+      setLoading(true)
+      setError('')
+
+      try {
+        const [statsData, activityData, statusData] =
+          await Promise.all([
+            api.adminStats(),
+            api.adminActivity(20),
+            api.adminLibraryStatus(),
+          ])
+
+        if (cancelled) return
+
+        setStats(statsData)
+        setActivity(
+          Array.isArray(activityData) ? activityData : [],
+        )
+        setLibraryStatus(
+          Array.isArray(statusData) ? statusData : [],
+        )
+      } catch (err) {
+        if (!cancelled && err.name !== 'AbortError') {
+          if (err.status === 403) {
+            setError('You do not have administrator access.')
+          } else {
+            setError(
+              err.message || 'Unable to load admin dashboard.',
+            )
+          }
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadDashboard()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (loading) {
+    return (
+      <main className="admin-page">
+        <div className="admin-state">
+          <p>Loading admin dashboard...</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="admin-page">
+        <div className="admin-state admin-state-error">
+          <h2>Unable to load dashboard</h2>
+          <p>{error}</p>
+        </div>
+      </main>
+    )
+  }
+
   return (
-    <div style={{ background: "#111827", minHeight: "100vh", color: "white", padding: 30 }}>
-      <h1 style={{ fontSize: 32 }}>Arcadia Admin Dashboard</h1>
-      <p style={{ color: "#9CA3AF", marginBottom: 30 }}>
-        Monitor platform activity and statistics.
-      </p>
+    <main className="admin-page">
+      <header className="admin-header">
+        <div>
+          <p className="admin-eyebrow">
+            ARCADIA ADMIN
+          </p>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-          gap: 20,
-        }}
-      >
-        {stats.map((item) => (
-          <div
-            key={item.title}
-            style={{
-              background: "#1F2937",
-              borderRadius: 16,
-              padding: 20,
-            }}
-          >
-            <p style={{ color: "#9CA3AF", margin: 0 }}>{item.title}</p>
-            <h2 style={{ marginTop: 10, fontSize: 28 }}>{item.value}</h2>
+          <h1>Platform Overview</h1>
+
+          <p>
+            Monitor the current state of the Arcadia platform.
+          </p>
+        </div>
+      </header>
+
+      <section className="admin-stats">
+        <article className="admin-stat-card">
+          <span>Users</span>
+          <strong>{stats?.users ?? 0}</strong>
+          <small>Registered accounts</small>
+        </article>
+
+        <article className="admin-stat-card">
+          <span>Games</span>
+          <strong>{stats?.games ?? 0}</strong>
+          <small>Games in database</small>
+        </article>
+
+        <article className="admin-stat-card">
+          <span>Reviews</span>
+          <strong>{stats?.reviews ?? 0}</strong>
+          <small>Published reviews</small>
+        </article>
+
+        <article className="admin-stat-card">
+          <span>Collections</span>
+          <strong>{stats?.collections ?? 0}</strong>
+          <small>User collections</small>
+        </article>
+
+        <article className="admin-stat-card">
+          <span>Follows</span>
+          <strong>{stats?.follows ?? 0}</strong>
+          <small>Social connections</small>
+        </article>
+      </section>
+
+      <section className="admin-grid">
+        <div className="admin-panel">
+          <div className="admin-panel-header">
+            <div>
+              <h2>Recent Activity</h2>
+              <p>
+                Latest activity recorded by the platform.
+              </p>
+            </div>
           </div>
-        ))}
-      </div>
 
-      <h2 style={{ marginTop: 40 }}>Recent Activity</h2>
+          {activity.length === 0 ? (
+            <div className="admin-empty">
+              <p>No activity recorded yet.</p>
+            </div>
+          ) : (
+            <div className="admin-activity-list">
+              {activity.map((item, index) => (
+                <div
+                  className="admin-activity"
+                  key={`${item.created_at}-${index}`}
+                >
+                  <div className="admin-activity-marker" />
 
-      <table
-        style={{
-          width: "100%",
-          marginTop: 15,
-          borderCollapse: "collapse",
-          background: "#1F2937",
-          borderRadius: 12,
-          overflow: "hidden",
-        }}
-      >
-        <thead>
-          <tr style={{ background: "#374151" }}>
-            <th style={{ padding: 12, textAlign: "left" }}>User</th>
-            <th style={{ padding: 12, textAlign: "left" }}>Activity</th>
-            <th style={{ padding: 12, textAlign: "left" }}>Time</th>
-          </tr>
-        </thead>
+                  <div className="admin-activity-content">
+                    <strong>{item.username}</strong>
 
-        <tbody>
-          {activity.map((row) => (
-            <tr key={row.user + row.time}>
-              <td style={{ padding: 12 }}>{row.user}</td>
-              <td style={{ padding: 12 }}>{row.action}</td>
-              <td style={{ padding: 12, color: "#9CA3AF" }}>{row.time}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h2 style={{ marginTop: 40 }}>Top Genres</h2>
+                    <span>
+                      {item.action}
+                      {item.target
+                        ? ` "${item.target}"`
+                        : ''}
+                    </span>
 
-<div
-  style={{
-    background: "#1F2937",
-    padding: 20,
-    borderRadius: 12,
-    marginTop: 15,
-  }}
->
-  {genreData.map((item) => (
-    <div key={item.genre} style={{ marginBottom: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 6,
-        }}
-      >
-        <span>{item.genre}</span>
-        <span>{item.users}</span>
-      </div>
+                    <small>
+                      {formatDate(item.created_at)}
+                    </small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      <div
-        style={{
-          width: "100%",
-          height: 10,
-          background: "#374151",
-          borderRadius: 10,
-        }}
-      >
-        <div
-          style={{
-            width: `${(item.users / 500) * 100}%`,
-            height: "100%",
-            background: "#8B5CF6",
-            borderRadius: 10,
-          }}
-        />
-      </div>
-    </div>
-  ))}
-</div>
-<h2 style={{ marginTop: 40 }}>QA Status</h2>
+        <div className="admin-panel">
+          <div className="admin-panel-header">
+            <div>
+              <h2>Library Status</h2>
+              <p>
+                How users are currently tracking their games.
+              </p>
+            </div>
+          </div>
 
-<div
-  style={{
-    background: "#1F2937",
-    borderRadius: 12,
-    padding: 20,
-    marginTop: 15,
-  }}
->
-  {[
-    "Login flow tested",
-    "Game search verified",
-    "Library update working",
-    "Profile page responsive",
-    "Dark theme consistency",
-  ].map((item) => (
-    <div
-      key={item}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        marginBottom: 12,
-      }}
-    >
-      <span style={{ color: "#22C55E", fontSize: 18, marginRight: 10 }}>✔</span>
-      <span>{item}</span>
-    </div>
-  ))}
-</div>
-    </div>
-  );
+          {libraryStatus.length === 0 ? (
+            <div className="admin-empty">
+              <p>No library entries yet.</p>
+            </div>
+          ) : (
+            <div className="admin-status-list">
+              {libraryStatus.map((item) => {
+                const total = libraryStatus.reduce(
+                  (sum, status) => sum + status.count,
+                  0,
+                )
+
+                const percentage =
+                  total > 0
+                    ? Math.round(
+                        (item.count / total) * 100,
+                      )
+                    : 0
+
+                return (
+                  <div
+                    className="admin-status-item"
+                    key={item.status}
+                  >
+                    <div className="admin-status-heading">
+                      <span>
+                        {formatStatus(item.status)}
+                      </span>
+
+                      <strong>
+                        {item.count}
+                      </strong>
+                    </div>
+
+                    <div className="admin-status-bar">
+                      <div
+                        className="admin-status-fill"
+                        style={{
+                          width: `${percentage}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="admin-info-panel">
+        <div>
+          <h2>System Information</h2>
+          <p>
+            This dashboard currently reports data directly
+            from the Arcadia database. Reports, moderation
+            queues, and genre analytics will appear here once
+            those systems are implemented.
+          </p>
+        </div>
+      </section>
+    </main>
+  )
 }
