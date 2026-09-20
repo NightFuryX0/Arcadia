@@ -1,9 +1,27 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
+from app.core.security import verify_password, create_access_token
 from app.core.security import hash_password
 from app.models import User
 from app.schemas.auth import RegisterRequest
+
+
+def login_user(
+    db: Session,
+    email: str,
+    password: str,
+) -> str:
+    user = db.scalar(
+        select(User).where(User.email == email)
+    )
+
+    if not user:
+        raise ValueError("Invalid email or password")
+
+    if not verify_password(password, user.password_hash):
+        raise ValueError("Invalid email or password")
+
+    return create_access_token(str(user.id))
 
 
 def register_user(
@@ -36,3 +54,21 @@ def register_user(
     db.refresh(user)
 
     return user
+
+
+def login_user(
+    db: Session,
+    email: str,
+    password: str,
+) -> str:
+    user = db.scalar(
+        select(User).where(User.email == email)
+    )
+
+    if not user:
+        raise ValueError("Invalid email or password")
+
+    if not verify_password(password, user.password_hash):
+        raise ValueError("Invalid email or password")
+
+    return create_access_token(str(user.id))
