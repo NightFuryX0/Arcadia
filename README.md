@@ -1,241 +1,470 @@
 # Arcadia
 
-Arcadia is a full-stack gaming platform for discovering, tracking, organizing, and reviewing games.
+**A social gaming platform for discovering, tracking, reviewing, and organizing games.**
 
-It combines game discovery with personal library management and social features, allowing users to build their gaming profile, track their progress, rate games, write reviews, and organize games into collections.
+Build your library. Track your progress. Rate what you play. Share your gaming profile.
 
----
-
-## Features
-
-### Game Discovery
-
-- Search for games using real IGDB data
-- View detailed game information
-- Game descriptions, genres, ratings, release dates, and cover artwork
-- High-quality game cover images
-- Debounced search with request cancellation
-- Search result caching
-
-### Personal Library
-
-Users can maintain a personal library and track their progress through different statuses:
-
-- Backlog
-- Playing
-- Completed
-- On Hold
-- Dropped
-
-Library entries can also include:
-
-- Personal rating
-- Playtime
-- Start date
-- Completion date
-
-### Authentication
-
-- User registration
-- User login
-- JWT-based authentication
-- Password hashing using Argon2
-- Protected API endpoints
-- Persistent authentication sessions
-
-### Reviews
-
-Arcadia supports game reviews with:
-
-- Review title
-- Review body
-- Rating
-- Spoiler indication
-- Review editing
-
-### Collections
-
-Users can organize games into custom collections with:
-
-- Collection names
-- Descriptions
-- Public/private visibility
-- Adding games
-- Removing games
-
-### Social Features
-
-The platform is designed around a social gaming experience, including:
-
-- User profiles
-- Following other users
-- Gaming activity
-- Community reviews
-- Public collections
-
-### Analytics
-
-Arcadia includes a gaming statistics layer for information such as:
-
-- Games played
-- Games completed
-- Backlog
-- Current games
-- Ratings
-- Playtime
-- Genre distribution
-- Gaming activity
+[![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![IGDB](https://img.shields.io/badge/IGDB-Game%20Data-9147FF)](https://www.igdb.com/)
 
 ---
 
-## Technology Stack
+## Why Arcadia?
+
+Modern gaming libraries are often scattered across different platforms.
+
+One service might help you discover games. Another might track your backlog. Another might contain reviews. Social interaction is often disconnected from the actual games you're playing.
+
+**Arcadia brings those pieces together.**
+
+The goal is simple:
+
+> **Give players one place to discover games, build their library, track their journey, and share their gaming experience.**
+
+Arcadia combines real game data from IGDB with a personal library, ratings, reviews, collections, profiles, and social features.
+
+The project is designed as a full-stack application with a React frontend, FastAPI backend, PostgreSQL database, and a structured service layer for external integrations.
+
+---
+
+## Quick look
+
+The primary Arcadia flow is:
+
+```text
+                 Discover
+                    |
+                    v
+              Search Games
+                    |
+                    v
+              Game Details
+                    |
+                    v
+             Add to Library
+                    |
+          +---------+---------+
+          |                   |
+          v                   v
+     Track Status          Rate Game
+          |                   |
+          +---------+---------+
+                    |
+                    v
+                 Library
+                    |
+                    v
+          Profile / Reviews /
+          Collections / Social
+```
+
+For example, a user can search for a game using real IGDB data:
+
+```text
+Hollow Knight
+      |
+      v
+Game details
+      |
+      +-- Cover
+      +-- Description
+      +-- Genres
+      +-- Release date
+      +-- Rating
+      |
+      v
+Add to Library
+      |
+      +-- Backlog
+      +-- Playing
+      +-- Completed
+      +-- On Hold
+      +-- Dropped
+```
+
+Arcadia is not intended to be just a game database.
+
+The game itself is the starting point for a user's personal gaming history.
+
+---
+
+## What it does
+
+| Area | Functionality |
+| --- | --- |
+| Authentication | Registration, login, JWT authentication |
+| Discovery | Search real games through IGDB |
+| Game Details | Game information, ratings, genres, release dates, artwork |
+| Library | Track games and personal progress |
+| Status Tracking | Backlog, Playing, Completed, On Hold, Dropped |
+| Ratings | Personal game ratings |
+| Reviews | Written game reviews with ratings and spoiler support |
+| Collections | Organize games into custom collections |
+| Profiles | Personal gaming identity and statistics |
+| Social | Follow other users and explore community activity |
+| Analytics | Gaming statistics and personal insights |
+| Administration | Prototype administration and platform statistics |
+
+---
+
+## How it works
+
+```text
+                         Arcadia
+                            |
+          +-----------------+-----------------+
+          |                                   |
+          v                                   v
+   React Frontend                        FastAPI API
+          |                                   |
+          |                                   |
+          |                          +--------+--------+
+          |                          |                 |
+          |                          v                 v
+          |                    Application        PostgreSQL
+          |                    Services           Database
+          |                          |
+          |                          v
+          |                         IGDB
+          |                     Game Database
+          |
+          +---------- HTTP / JSON ----------->+
+```
+
+The application is divided into several logical layers.
 
 ### Frontend
 
-- React
-- Vite
-- React Router
-- JavaScript
-- CSS
+The React application handles:
+
+- User interaction
+- Routing
+- Game discovery
+- Game details
+- Library management
+- Profiles
+- Reviews
+- Collections
+- Social interfaces
+- Loading and error states
+
+The frontend also contains reusable components, hooks, contexts, and utility modules rather than putting application logic into individual pages.
 
 ### Backend
 
-- Python
-- FastAPI
-- SQLAlchemy 2.0
-- Pydantic
-- Pydantic Settings
-- JWT
-- Argon2
-- Alembic
+The FastAPI backend provides:
+
+- Authentication
+- User management
+- Game integration
+- Library operations
+- Reviews
+- Collections
+- Social operations
+- Database access
+- External API communication
+
+The backend is organized into API routes, services, models, schemas, and core infrastructure.
 
 ### Database
 
-- PostgreSQL
-- Docker
+PostgreSQL stores persistent application data.
 
-### External Services
+Major entities include:
 
-- IGDB API
-- Twitch OAuth
+```text
+User
+Game
+UserGame
+Review
+Collection
+Follow
+```
+
+### External Game Data
+
+IGDB provides the external game catalogue.
+
+Arcadia uses IGDB for information such as:
+
+- Titles
+- Descriptions
+- Genres
+- Ratings
+- Release dates
+- Cover artwork
 
 ---
 
 ## Architecture
 
 ```text
-┌─────────────────────────────┐
-│        React Frontend       │
-│                             │
-│  Pages • Components • Hooks │
-│  Context • API Client       │
-└──────────────┬──────────────┘
-               │
-               │ HTTP / JSON
-               ▼
-┌─────────────────────────────┐
-│        FastAPI Backend      │
-│                             │
-│  API • Services • Security  │
-│  Schemas • Dependencies     │
-└──────────────┬──────────────┘
-               │
-        ┌──────┴───────┐
-        │              │
-        ▼              ▼
-┌──────────────┐ ┌──────────────┐
-│  PostgreSQL  │ │     IGDB     │
-│   Database   │ │  Game Data   │
-└──────────────┘ └──────────────┘
+                         ┌──────────────────────┐
+                         │      React UI        │
+                         │                      │
+                         │ Pages                │
+                         │ Components           │
+                         │ Context              │
+                         │ Hooks                │
+                         └──────────┬───────────┘
+                                    │
+                                    │ REST / JSON
+                                    ▼
+                         ┌──────────────────────┐
+                         │      FastAPI         │
+                         │                      │
+                         │ API Routes           │
+                         │ Schemas              │
+                         │ Dependencies         │
+                         └──────────┬───────────┘
+                                    │
+                     ┌──────────────┼──────────────┐
+                     │              │              │
+                     ▼              ▼              ▼
+              ┌────────────┐ ┌────────────┐ ┌────────────┐
+              │  Services  │ │ PostgreSQL │ │   IGDB     │
+              │            │ │            │ │            │
+              │ Auth       │ │ Persistent │ │ External   │
+              │ Library    │ │ Data       │ │ Game Data  │
+              │ Reviews    │ │            │ │            │
+              │ Collections│ │            │ │            │
+              │ IGDB       │ │            │ │            │
+              └────────────┘ └────────────┘ └────────────┘
 ```
 
-The frontend communicates with the FastAPI backend through a REST API.
+The architecture keeps external API communication and database operations out of the frontend.
 
-The backend handles authentication, database operations, library management, reviews, collections, social functionality, and integration with IGDB.
-
-PostgreSQL stores application data while IGDB provides external game information.
+This makes the application easier to extend as new features are introduced.
 
 ---
 
-## Project Structure
+## Frontend experience
+
+The frontend is designed around a dark, gaming-focused interface rather than a conventional business dashboard.
+
+The current interface includes:
+
+- Responsive navigation
+- Discover page
+- Game search
+- Game grids
+- Game cards
+- Game detail pages
+- Library
+- Profile foundation
+- Authentication modal
+- Rating controls
+- Status selection
+- Toast notifications
+- Loading skeletons
+- Empty states
+- Error states
+- Custom 404 page
+
+### Search
+
+Game search uses a debounced request flow:
 
 ```text
-arcadia/
-│
-├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── auth/
-│   │   │   ├── users/
-│   │   │   ├── games/
-│   │   │   ├── library/
-│   │   │   ├── reviews/
-│   │   │   └── collections/
-│   │   │
-│   │   ├── core/
-│   │   ├── database/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   └── main.py
-│   │
-│   ├── migrations/
-│   │   └── versions/
-│   │
-│   ├── alembic.ini
-│   ├── .env.example
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── lib/
-│   │   ├── pages/
-│   │   ├── api.js
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── styles.css
-│   │
-│   ├── package.json
-│   └── package-lock.json
-│
-├── docs/
-├── docker-compose.yml
-├── .gitignore
-└── README.md
+User types
+    |
+    v
+Debounce
+    |
+    v
+Search API
+    |
+    v
+IGDB
+    |
+    v
+Normalize results
+    |
+    v
+Game Grid
 ```
+
+The frontend also cancels stale requests using `AbortController`.
+
+This prevents an older search request from unnecessarily updating the interface after a newer query has been entered.
 
 ---
 
-## Core Application Flow
+## Library
 
-The primary user flow is:
+The library is one of the core parts of Arcadia.
+
+Each library entry can contain:
 
 ```text
-Register / Login
-       ↓
-    Discover
-       ↓
-  Search Games
-       ↓
- Game Details
-       ↓
- Add to Library
-       ↓
-Track Status & Rating
-       ↓
-    Library
+Game
+ |
+ +-- Status
+ |    +-- Backlog
+ |    +-- Playing
+ |    +-- Completed
+ |    +-- On Hold
+ |    +-- Dropped
+ |
+ +-- Rating
+ +-- Playtime
+ +-- Started At
+ +-- Completed At
 ```
 
-The core authentication, game discovery, game details, library management, status updates, ratings, and data persistence flows have been implemented and manually verified.
+This allows Arcadia to represent more than a simple list of owned games.
+
+It represents a player's **gaming history**.
+
+---
+
+## Reviews
+
+Reviews are tied directly to games and users.
+
+A review can contain:
+
+```text
+Title
+Body
+Rating
+Spoiler flag
+```
+
+Users can create and edit their reviews through the API.
+
+The review system is designed to eventually become part of the wider social experience, where a game page contains both game information and community opinions.
+
+---
+
+## Collections
+
+Collections allow users to organize games beyond the standard library statuses.
+
+Examples:
+
+```text
+My Favorite RPGs
+
+Games I Want To Finish
+
+Indie Games Worth Playing
+
+Games for the Weekend
+
+Best Soundtracks
+```
+
+Collections support:
+
+- Custom names
+- Descriptions
+- Visibility
+- Adding games
+- Removing games
+
+---
+
+## Social layer
+
+Arcadia is designed to connect personal game tracking with community interaction.
+
+The social layer includes:
+
+- User profiles
+- Follow/unfollow
+- Reviews
+- Public collections
+- Gaming activity
+- Community-oriented discovery
+
+A user's profile is intended to become a representation of their gaming history rather than simply an account settings page.
+
+---
+
+## IGDB integration
+
+Arcadia uses IGDB as its external game data provider.
+
+The backend authenticates through Twitch's client credentials flow and communicates with the IGDB API.
+
+The integration currently supports:
+
+- Game search
+- Game details
+- Genres
+- Ratings
+- Release dates
+- Summaries
+- Cover artwork
+
+### Request flow
+
+```text
+Frontend
+   |
+   v
+FastAPI
+   |
+   v
+IGDB Service
+   |
+   +---- Twitch OAuth
+   |
+   v
+IGDB API
+   |
+   v
+Normalize game data
+   |
+   v
+Frontend response
+```
+
+The IGDB service uses HTTPX with reusable connections.
+
+Access tokens are cached rather than requesting a new Twitch token for every game request.
+
+Search results are also cached to reduce unnecessary repeated requests.
+
+---
+
+## Performance
+
+Arcadia includes several optimizations across the frontend and backend.
+
+### Frontend
+
+- Debounced search
+- AbortController request cancellation
+- Client-side search caching
+- Session caching for featured games
+- Lazy-loaded images
+- Reusable normalized game data
+- Loading skeletons
+
+### Backend
+
+- HTTP connection reuse
+- Twitch access-token caching
+- Search-result caching
+- Bounded in-memory cache
+- Request timing
+- Reusable HTTP client
+- Reduced unnecessary external API requests
+
+The goal is not premature optimization.
+
+The goal is to prevent obvious repeated work from becoming part of the normal application flow.
 
 ---
 
 ## API
 
-The backend API is served under:
+The backend API is exposed under:
 
 ```text
 /api/v1
@@ -283,11 +512,12 @@ PATCH /api/v1/reviews/{review_id}
 ```http
 POST   /api/v1/collections
 PATCH  /api/v1/collections/{collection_id}
+
 POST   /api/v1/collections/{collection_id}/games
 DELETE /api/v1/collections/{collection_id}/games/{game_id}
 ```
 
-Interactive API documentation is available through FastAPI at:
+Interactive API documentation is available through FastAPI:
 
 ```text
 http://localhost:8000/docs
@@ -295,69 +525,140 @@ http://localhost:8000/docs
 
 ---
 
-## IGDB Integration
+## Authentication
 
-Arcadia uses IGDB as its external game data provider.
+Arcadia uses JWT-based authentication.
 
-The integration provides:
+Passwords are hashed using Argon2 before being stored.
 
-- Game search
-- Game details
-- Game titles
-- Descriptions
-- Release dates
-- Ratings
-- Genres
-- Cover artwork
+The authentication flow is:
 
-The backend communicates with IGDB through Twitch's OAuth client credentials flow.
+```text
+Register
+   |
+   v
+Hash password
+   |
+   v
+Store user
+   |
+   v
+Login
+   |
+   v
+Verify password
+   |
+   v
+Generate JWT
+   |
+   v
+Authenticated API requests
+```
 
-The integration also uses:
-
-- HTTP connection reuse
-- Access-token caching
-- Search-result caching
-- Request timing
-- High-resolution cover artwork
+Protected endpoints use the authenticated user's identity when performing operations such as library updates and social actions.
 
 ---
 
 ## Database
 
-Arcadia uses PostgreSQL with SQLAlchemy.
+Arcadia uses PostgreSQL with SQLAlchemy 2.0.
 
-The primary database entities are:
+The primary entities are:
 
 ```text
 User
-Game
-UserGame
-Review
-Collection
-Follow
+   |
+   +---- UserGame ---- Game
+   |
+   +---- Review ------ Game
+   |
+   +---- Collection -- Game
+   |
+   +---- Follow ------ User
 ```
 
-Database schema changes are managed using Alembic migrations.
+Database changes are managed through Alembic.
+
+Current migrations cover:
+
+- Users
+- Games
+- User libraries
+- Reviews
+- Collections
+- Follows
 
 ---
 
-## Getting Started
+## Project structure
+
+```text
+arcadia/
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth/
+│   │   │   ├── users/
+│   │   │   ├── games/
+│   │   │   ├── library/
+│   │   │   ├── reviews/
+│   │   │   └── collections/
+│   │   │
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── dependencies.py
+│   │   │   └── security.py
+│   │   │
+│   │   ├── database/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   └── main.py
+│   │
+│   ├── migrations/
+│   │   └── versions/
+│   │
+│   ├── alembic.ini
+│   ├── .env.example
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   ├── api.js
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── styles.css
+│   │
+│   ├── package.json
+│   └── package-lock.json
+│
+├── docs/
+├── docker-compose.yml
+├── .gitignore
+└── README.md
+```
+
+---
+
+## Installation
 
 ### Requirements
 
-Install:
-
-- Git
 - Python 3.9+
 - Node.js
 - npm
 - Docker Desktop
-
-A modern Python version such as Python 3.11 or 3.12 is recommended for development.
+- Git
 
 ---
 
-### 1. Clone the Repository
+### Clone
 
 ```bash
 git clone https://github.com/NightFuryX0/Arcadia.git
@@ -366,31 +667,21 @@ cd Arcadia
 
 ---
 
-### 2. Start PostgreSQL
-
-From the project root:
+### Start PostgreSQL
 
 ```bash
 docker compose up -d
 ```
 
-Verify the container:
+Verify:
 
 ```bash
 docker compose ps
 ```
 
-PostgreSQL will run on:
-
-```text
-localhost:5432
-```
-
 ---
 
-### 3. Configure the Backend
-
-Move into the backend:
+### Backend
 
 ```bash
 cd backend
@@ -404,16 +695,8 @@ python3 -m venv .venv
 
 Activate it:
 
-#### macOS / Linux
-
 ```bash
 source .venv/bin/activate
-```
-
-#### Windows
-
-```powershell
-.venv\Scripts\activate
 ```
 
 Install dependencies:
@@ -421,10 +704,6 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
-
----
-
-### 4. Configure Environment Variables
 
 Create:
 
@@ -445,13 +724,97 @@ IGDB_CLIENT_ID=your-igdb-client-id
 IGDB_CLIENT_SECRET=your-igdb-client-secret
 ```
 
-Do not commit `.env` or expose API credentials.
+Run migrations:
+
+```bash
+alembic upgrade head
+```
+
+Start the API:
+
+```bash
+uvicorn app.main:app --reload
+```
 
 ---
 
-### 5. Run Database Migrations
+### Frontend
 
-From the `backend` directory:
+In a separate terminal:
+
+```bash
+cd frontend
+npm install
+```
+
+Create:
+
+```text
+frontend/.env
+```
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+Start Vite:
+
+```bash
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## Development
+
+### Backend
+
+```bash
+cd backend
+source .venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+### Database
+
+Start:
+
+```bash
+docker compose up -d
+```
+
+Stop:
+
+```bash
+docker compose down
+```
+
+Do not use `docker compose down -v` unless you intentionally want to remove the development database volume.
+
+---
+
+## Database migrations
+
+Create a migration:
+
+```bash
+alembic revision --autogenerate -m "describe change"
+```
+
+Apply migrations:
 
 ```bash
 alembic upgrade head
@@ -463,152 +826,64 @@ Check the current migration:
 alembic current
 ```
 
----
-
-### 6. Start the Backend
-
-```bash
-uvicorn app.main:app --reload
-```
-
-The backend will be available at:
-
-```text
-http://localhost:8000
-```
-
-API documentation:
-
-```text
-http://localhost:8000/docs
-```
+Always review generated migrations before applying them.
 
 ---
 
-### 7. Start the Frontend
+## Testing
 
-Open a new terminal:
-
-```bash
-cd frontend
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Create:
+The core application flow has been manually verified:
 
 ```text
-frontend/.env
+Register
+   ↓
+Login
+   ↓
+Search
+   ↓
+Game Details
+   ↓
+Add to Library
+   ↓
+Change Status
+   ↓
+Change Rating
+   ↓
+Refresh
+   ↓
+Verify Persistence
 ```
 
-with:
+The project is also structured to support automated backend and integration testing as the application continues to grow.
 
-```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-```
+Testing priorities include:
 
-Start the development server:
-
-```bash
-npm run dev
-```
-
-The frontend will normally be available at:
-
-```text
-http://localhost:5173
-```
-
----
-
-## Database Migrations
-
-Create a migration after changing database models:
-
-```bash
-alembic revision --autogenerate -m "describe change"
-```
-
-Review the generated migration before applying it.
-
-Apply migrations:
-
-```bash
-alembic upgrade head
-```
-
-Check migration status:
-
-```bash
-alembic current
-```
-
-### Warning
-
-Avoid using:
-
-```bash
-docker compose down -v
-```
-
-unless you intentionally want to delete the local PostgreSQL volume and its development data.
-
----
-
-## Development
-
-### Backend
-
-Start the development server:
-
-```bash
-cd backend
-source .venv/bin/activate
-uvicorn app.main:app --reload
-```
-
-### Frontend
-
-Start the Vite development server:
-
-```bash
-cd frontend
-npm run dev
-```
-
-### PostgreSQL
-
-Start the database:
-
-```bash
-docker compose up -d
-```
-
-Stop the database without deleting its volume:
-
-```bash
-docker compose down
-```
+- Authentication
+- Game search
+- Game details
+- Library operations
+- Reviews
+- Collections
+- Social actions
+- API error handling
+- Responsive layouts
+- End-to-end user flows
 
 ---
 
 ## Security
 
-Arcadia uses several security measures in the current implementation:
+Arcadia currently uses:
 
 - JWT authentication
 - Argon2 password hashing
 - Environment-based secrets
-- Authenticated API dependencies
-- Input validation through Pydantic
+- Pydantic request validation
 - Database constraints
-- Protected user operations
+- Authenticated API dependencies
+- CORS configuration
 
-Sensitive configuration must remain outside version control.
+Sensitive credentials should never be committed.
 
 Never commit:
 
@@ -616,112 +891,187 @@ Never commit:
 .env
 API keys
 IGDB credentials
-JWT secrets
+JWT production secrets
 Database passwords
 ```
 
 ---
 
-## Error Handling
+## Error handling
 
-The application provides dedicated handling for common application states including:
+The application handles common failure states across the frontend and backend.
 
-- Authentication errors
+These include:
+
+- Invalid authentication
 - Unauthorized requests
-- Forbidden requests
+- Forbidden operations
 - Missing games
 - API failures
+- Network failures
 - Empty search results
 - Loading states
-- Network failures
 - Invalid requests
 - Custom 404 pages
 
-The frontend also provides user-friendly error messages rather than exposing raw backend errors wherever possible.
+The frontend uses centralized error handling to turn API failures into user-facing messages rather than exposing raw server responses.
 
 ---
 
-## Performance Considerations
+## Current status
 
-Several performance improvements are already incorporated into the application.
+The core platform is functional.
 
-### Frontend
+### Completed
 
-- Debounced search
-- AbortController for stale requests
-- Client-side search caching
-- Session caching for featured games
-- Lazy-loaded images
-- Reusable game normalization utilities
-- Loading skeletons
+- Authentication
+- PostgreSQL integration
+- Database migrations
+- IGDB integration
+- Game search
+- Game details
+- Game covers
+- Personal library
+- Library status tracking
+- Ratings
+- Persistent library data
+- Responsive frontend foundation
+- Search optimization
+- Loading and error states
+- Custom 404 page
 
-### Backend
+### In progress
 
-- Reused HTTP connections through HTTPX
-- Cached Twitch access tokens
-- Cached game searches
-- Bounded search cache
-- Request timing/logging
-- Efficient external API communication
+- User profiles
+- Reviews interface
+- Collections interface
+- Social interactions
+- Activity experience
+- Gaming analytics
+- Administrative interface
+- Comprehensive QA
 
 ---
 
-## Development Roadmap
+## Roadmap
 
-### Current
+### Platform
 
 - [x] Authentication
 - [x] Game discovery
 - [x] IGDB integration
 - [x] Game details
-- [x] Personal library
+- [x] Library management
 - [x] Status tracking
-- [x] Game ratings
+- [x] Ratings
 - [x] PostgreSQL persistence
-- [x] Database migrations
-- [x] Responsive frontend foundation
-- [x] Error and loading states
-- [x] Custom 404 page
 
-### In Progress
+### Social
 
 - [ ] User profiles
-- [ ] Review interface
-- [ ] Collections interface
-- [ ] Social interactions
-- [ ] Gaming analytics
-- [ ] Administrative interface
-- [ ] Comprehensive integration testing
+- [ ] Reviews
+- [ ] Collections
+- [ ] Following
+- [ ] Activity feed
+
+### Analytics
+
+- [ ] Personal gaming statistics
+- [ ] Genre statistics
+- [ ] Rating statistics
+- [ ] Playtime analytics
+- [ ] Completion history
+- [ ] Administrative dashboard
 
 ### Future
 
 - [ ] Recommendation system
 - [ ] Likes and comments
-- [ ] Advanced activity feed
 - [ ] Gamification
-- [ ] Real-time notifications
+- [ ] Notifications
 - [ ] Advanced moderation
 - [ ] Production infrastructure
 - [ ] Advanced analytics
 
 ---
 
-## Scope
+## Design principles
 
-Arcadia is currently focused on delivering a complete, functional prototype rather than a production-scale platform.
+### Game-first
 
-The current implementation prioritizes:
+Games are the center of the application.
 
-- A working end-to-end user experience
-- Reliable game discovery
-- Personal game tracking
-- Social gaming functionality
-- Clean API architecture
-- Persistent data
-- Responsive UI
-- Maintainable code
+Every major feature should connect naturally back to a user's relationship with games.
 
-More advanced infrastructure and social systems can be added as the platform evolves.
+### Personal history
+
+Arcadia is not only a catalogue.
+
+A library represents what a player has played, what they are playing, what they want to play, and what they left behind.
+
+### Social by design
+
+Reviews, collections, profiles, and following are designed to connect players around the games they care about.
+
+### Real data
+
+Game information comes from a real external catalogue rather than a hardcoded collection of sample games.
+
+### Simple architecture
+
+The project favors understandable layers and explicit responsibilities over unnecessary infrastructure.
+
+### Prototype before scale
+
+The current goal is a complete and reliable product experience.
+
+Infrastructure complexity should only be introduced when the application actually needs it.
+
+---
+
+## Limitations
+
+Arcadia is currently a prototype and is not intended to represent a production-scale gaming platform.
+
+Some advanced functionality remains outside the current scope, including:
+
+- Real-time social infrastructure
+- Large-scale recommendation systems
+- Advanced moderation
+- Production analytics pipelines
+- Distributed caching
+- Complex notification infrastructure
+- Large-scale deployment architecture
+
+The current implementation prioritizes a complete end-to-end experience over infrastructure complexity.
+
+---
+
+## Future direction
+
+The long-term vision for Arcadia is to become a complete personal and social gaming hub.
+
+The platform can evolve from:
+
+```text
+Game Discovery
+      ↓
+Personal Library
+      ↓
+Gaming History
+      ↓
+Reviews & Collections
+      ↓
+Social Profiles
+      ↓
+Community
+      ↓
+Personalized Discovery
+```
+
+The goal is not simply to catalogue games.
+
+It is to build a platform around the **relationship between players and the games they play.**
 
 ---
 
@@ -729,4 +1079,4 @@ More advanced infrastructure and social systems can be added as the platform evo
 
 This project is currently developed as a project application.
 
-License information can be added here when the project is prepared for public distribution.
+License information will be added when Arcadia is prepared for public distribution.
