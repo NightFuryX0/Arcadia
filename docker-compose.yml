@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: arcadia-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: arcadia
+      POSTGRES_USER: arcadia
+      POSTGRES_PASSWORD: arcadia_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - arcadia_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  arcadia_postgres_data:
