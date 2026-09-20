@@ -6,6 +6,8 @@ from app.api.library.routes import router as library_router
 from app.api.collections.routes import router as collections_router
 from app.api.games.routes import router as games_router
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.community.routes import router as community_router
+from app.api.admin.routes import router as admin_router
 app = FastAPI(
     title="Arcadia API",
     description="Backend API for the Arcadia gaming management platform.",
@@ -25,6 +27,14 @@ app.include_router(
 
 app.include_router(
     auth_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    community_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    admin_router,
     prefix="/api/v1",
 )
 app.include_router(

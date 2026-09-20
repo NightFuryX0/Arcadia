@@ -1,139 +1,368 @@
-import { useState } from "react";
+import { useEffect, useState } from 'react'
+import { api } from '../api'
 
-const posts = [
-  {
-    id: 1,
-    user: "Player_01",
-    game: "Elden Ring",
-    review: "One of the best RPG experiences I've ever played.",
-    rating: "9.5/10",
-    likes: 124,
-  },
-  {
-    id: 2,
-    user: "Player_02",
-    game: "Cyberpunk 2077",
-    review: "The Phantom Liberty expansion completely changed the game.",
-    rating: "9/10",
-    likes: 89,
-  },
-  {
-    id: 3,
-    user: "Player_03",
-    game: "Hades",
-    review: "Perfect gameplay loop and amazing soundtrack!",
-    rating: "10/10",
-    likes: 156,
-  },
-];
+function formatDate(dateString) {
+  if (!dateString) return ''
 
-const gamers = [
-  "RPGMaster",
-  "PixelQueen",
-  "NoScopePro",
-  "IndieHunter",
-];
+  const date = new Date(dateString)
+
+  return date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function getDisplayName(user) {
+  return user.display_name || user.username
+}
 
 export default function Community() {
-  const [feed, setFeed] = useState(posts);
+  const [reviews, setReviews] = useState([])
+  const [suggestions, setSuggestions] = useState([])
 
-  const likePost = (id) => {
-    setFeed(
-      feed.map((p) =>
-        p.id === id ? { ...p, likes: p.likes + 1 } : p
-      )
-    );
-  };
+  const [loadingReviews, setLoadingReviews] = useState(true)
+  const [loadingSuggestions, setLoadingSuggestions] = useState(true)
+
+  const [reviewError, setReviewError] = useState('')
+  const [suggestionError, setSuggestionError] = useState('')
+
+  const [following, setFollowing] = useState({})
+  const [followLoading, setFollowLoading] = useState({})
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCommunity() {
+      setLoadingReviews(true)
+      setReviewError('')
+
+      try {
+        const data = await api.communityFeed()
+
+        if (!cancelled) {
+          setReviews(Array.isArray(data) ? data : [])
+        }
+      } catch (error) {
+        if (!cancelled && error.name !== 'AbortError') {
+          setReviewError(error.message || 'Unable to load community feed.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingReviews(false)
+        }
+      }
+    }
+
+    loadCommunity()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadSuggestions() {
+      setLoadingSuggestions(true)
+      setSuggestionError('')
+
+      try {
+        const data = await api.communitySuggestions()
+
+        if (!cancelled) {
+          const users = Array.isArray(data) ? data : []
+
+          setSuggestions(users)
+
+          const initialFollowing = {}
+
+          users.forEach((user) => {
+            initialFollowing[user.id] = user.is_following
+          })
+
+          setFollowing(initialFollowing)
+        }
+      } catch (error) {
+        if (!cancelled && error.name !== 'AbortError') {
+          setSuggestionError(
+            error.message || 'Unable to load suggested users.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingSuggestions(false)
+        }
+      }
+    }
+
+    loadSuggestions()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  async function handleFollow(userId) {
+    const currentlyFollowing = following[userId]
+
+    setFollowLoading((current) => ({
+      ...current,
+      [userId]: true,
+    }))
+
+    try {
+      if (currentlyFollowing) {
+        await api.unfollowUser(userId)
+      } else {
+        await api.followUser(userId)
+      }
+
+      setFollowing((current) => ({
+        ...current,
+        [userId]: !currentlyFollowing,
+      }))
+    } catch (error) {
+      console.error('Failed to update follow state:', error)
+    } finally {
+      setFollowLoading((current) => ({
+        ...current,
+        [userId]: false,
+      }))
+    }
+  }
 
   return (
-    <div style={{ background: "#111827", minHeight: "100vh", color: "white", padding: 30 }}>
-      <h1 style={{ fontSize: 32 }}>Community</h1>
-      <p style={{ color: "#9CA3AF", marginBottom: 30 }}>
-        Discover reviews and connect with gamers.
-      </p>
-
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 20 }}>
+    <main className="community-page">
+      <section className="community-header">
         <div>
-          {feed.map((post) => (
-            <div
-              key={post.id}
-              style={{
-                background: "#1F2937",
-                borderRadius: 14,
-                padding: 20,
-                marginBottom: 20,
-              }}
-            >
-              <h3>{post.user}</h3>
-              <p style={{ color: "#A78BFA" }}>{post.game}</p>
-              <p>{post.review}</p>
+          <p className="eyebrow">ARCADIA COMMUNITY</p>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginTop: 15,
-                }}
-              >
-                <strong>{post.rating}</strong>
+          <h1>Discover what gamers are playing.</h1>
 
-                <button
-                  onClick={() => likePost(post.id)}
-                  style={{
-                    background: "#8B5CF6",
-                    color: "white",
-                    border: "none",
-                    padding: "8px 14px",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                  }}
-                >
-                  ❤️ {post.likes}
-                </button>
+          <p className="community-subtitle">
+            See reviews from the people you follow and discover new players
+            across Arcadia.
+          </p>
+        </div>
+      </section>
+
+      <div className="community-layout">
+        <section className="community-feed">
+          <div className="section-heading">
+            <div>
+              <h2>Community Feed</h2>
+              <p>Recent reviews from the Arcadia community.</p>
+            </div>
+          </div>
+
+          {loadingReviews && (
+            <div className="community-state">
+              <p>Loading community activity...</p>
+            </div>
+          )}
+
+          {!loadingReviews && reviewError && (
+            <div className="community-state community-state-error">
+              <p>{reviewError}</p>
+            </div>
+          )}
+
+          {!loadingReviews &&
+            !reviewError &&
+            reviews.length === 0 && (
+              <div className="community-state">
+                <h3>No reviews yet</h3>
+
+                <p>
+                  Once players start reviewing games, their activity will
+                  appear here.
+                </p>
+              </div>
+            )}
+
+          {!loadingReviews &&
+            !reviewError &&
+            reviews.length > 0 && (
+              <div className="community-review-list">
+                {reviews.map((review) => (
+                  <article
+                    className="community-review-card"
+                    key={review.id}
+                  >
+                    <div className="community-review-user">
+                      <div className="community-avatar">
+                        {review.avatar_url ? (
+                          <img
+                            src={review.avatar_url}
+                            alt=""
+                          />
+                        ) : (
+                          <span>
+                            {getDisplayName(review)
+                              .charAt(0)
+                              .toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <strong>
+                          {getDisplayName(review)}
+                        </strong>
+
+                        <span>
+                          @{review.username}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="community-game">
+                      {review.game_cover_url && (
+                        <img
+                          src={review.game_cover_url}
+                          alt={review.game_title}
+                        />
+                      )}
+
+                      <div className="community-game-info">
+                        <span className="community-game-label">
+                          REVIEWED
+                        </span>
+
+                        <h3>{review.game_title}</h3>
+
+                        <div className="community-rating">
+                          <span>{review.rating}/10</span>
+
+                          <span className="community-review-date">
+                            {formatDate(review.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="community-review-content">
+                      {review.title && (
+                        <h3>{review.title}</h3>
+                      )}
+
+                      <p>
+                        {review.contains_spoilers
+                          ? 'This review contains spoilers.'
+                          : review.body}
+                      </p>
+
+                      {review.contains_spoilers && (
+                        <details>
+                          <summary>
+                            Show spoiler review
+                          </summary>
+
+                          <p>{review.body}</p>
+                        </details>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+        </section>
+
+        <aside className="community-sidebar">
+          <div className="community-sidebar-card">
+            <div className="section-heading">
+              <div>
+                <h2>Find Gamers</h2>
+                <p>People you might want to follow.</p>
               </div>
             </div>
-          ))}
-        </div>
 
-        <div
-          style={{
-            background: "#1F2937",
-            borderRadius: 14,
-            padding: 20,
-            height: "fit-content",
-          }}
-        >
-          <h3>Suggested Gamers</h3>
+            {loadingSuggestions && (
+              <div className="community-sidebar-state">
+                Loading players...
+              </div>
+            )}
 
-          {gamers.map((gamer) => (
-            <div
-              key={gamer}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: 18,
-                alignItems: "center",
-              }}
-            >
-              <span>{gamer}</span>
+            {!loadingSuggestions && suggestionError && (
+              <div className="community-sidebar-state community-state-error">
+                {suggestionError}
+              </div>
+            )}
 
-              <button
-                style={{
-                  background: "#374151",
-                  color: "white",
-                  border: "1px solid #6B7280",
-                  padding: "6px 12px",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                }}
-              >
-                Follow
-              </button>
-            </div>
-          ))}
-        </div>
+            {!loadingSuggestions &&
+              !suggestionError &&
+              suggestions.length === 0 && (
+                <div className="community-sidebar-state">
+                  No new players to suggest right now.
+                </div>
+              )}
+
+            {!loadingSuggestions &&
+              !suggestionError &&
+              suggestions.length > 0 && (
+                <div className="community-user-list">
+                  {suggestions.map((user) => {
+                    const isFollowing = following[user.id]
+                    const isLoading = followLoading[user.id]
+
+                    return (
+                      <div
+                        className="community-user"
+                        key={user.id}
+                      >
+                        <div className="community-avatar">
+                          {user.avatar_url ? (
+                            <img
+                              src={user.avatar_url}
+                              alt=""
+                            />
+                          ) : (
+                            <span>
+                              {getDisplayName(user)
+                                .charAt(0)
+                                .toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="community-user-info">
+                          <strong>
+                            {getDisplayName(user)}
+                          </strong>
+
+                          <span>
+                            @{user.username}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={
+                            isFollowing
+                              ? 'community-follow-button following'
+                              : 'community-follow-button'
+                          }
+                          disabled={isLoading}
+                          onClick={() =>
+                            handleFollow(user.id)
+                          }
+                        >
+                          {isLoading
+                            ? '...'
+                            : isFollowing
+                              ? 'Following'
+                              : 'Follow'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+          </div>
+        </aside>
       </div>
-    </div>
-  );
+    </main>
+  )
 }
