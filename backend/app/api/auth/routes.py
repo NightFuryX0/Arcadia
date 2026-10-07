@@ -10,6 +10,7 @@ from app.schemas.auth import (
 )
 from app.services.auth_service import login_user, register_user
 
+
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
@@ -54,35 +55,9 @@ def register(
 ):
     try:
         return register_user(db, data)
+
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=str(error),
-        )
-
-
-@router.post(
-    "/login",
-    response_model=TokenResponse,
-)
-def login(
-    data: LoginRequest,
-    db: Session = Depends(get_db),
-):
-    try:
-        access_token = login_user(
-            db,
-            data.email,
-            data.password,
-        )
-
-        return {
-            "access_token": access_token,
-            "token_type": "bearer",
-        }
-
-    except ValueError as error:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(error),
         )
