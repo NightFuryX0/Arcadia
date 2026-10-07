@@ -1,6 +1,6 @@
 const API_BASE = (
   import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:8000/api/v1'
+  'https://fl8hc7k2-8000.usw3.devtunnels.ms/api/v1'
 ).replace(/\/$/, '')
 
 async function request(path, options = {}) {

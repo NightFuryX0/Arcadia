@@ -35,7 +35,10 @@ export default function AuthModal() {
     try {
       let data = isLogin
         ? await api.login({ email: form.email, password: form.password })
-        : await api.register(form)
+        : await api.register({
+    ...form,
+    display_name: form.username,
+  })
       let token = data?.access_token || data?.token
       if (!token && !isLogin) { // some backends don't return a token on register
         data = await api.login({ email: form.email, password: form.password })
