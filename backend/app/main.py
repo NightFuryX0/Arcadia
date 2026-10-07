@@ -17,7 +17,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://fl8hc7k2-5173.usw3.devtunnels.ms",
+        "https://arcadia-frontend-5o0p.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
