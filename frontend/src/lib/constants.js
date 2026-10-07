@@ -17,7 +17,7 @@ export const SEARCH_DEBOUNCE_MS = 400
 // Titles used to build the "Games worth playing" shelf from the real search API.
 export const FEATURED_TITLES = [
   'Elden Ring',
-  'Hollow Knight: Silksong',
+  'Nier: Automata - Game of the Yorha Edition',
   'Red Dead Redemption 2',
   'Hades',
   'Cyberpunk 2077',
